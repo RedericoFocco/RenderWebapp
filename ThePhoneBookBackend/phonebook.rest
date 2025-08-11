@@ -1,0 +1,30 @@
+GET http://localhost:3001/api/personas
+
+#### GET Good Req
+GET http://localhost:3001/api/personas/4
+
+#### GET Bad Req
+GET http://localhost:3001/api/personas/5
+
+#### Delete Good Req
+DELETE http://localhost:3001/api/personas/4
+
+#### Delete Bad Req
+DELETE http://localhost:3001/api/personas/5
+
+#### Post Good Req
+POST http://localhost:3001/api/personas
+Content-Type: application/json; charset=utf-8
+
+{
+    "name":"fero",
+    "number":"123"
+}
+
+#### Post Bad Req
+POST http://localhost:3001/api/personas
+Content-Type: application/json; charset=utf-8
+
+{
+
+}
