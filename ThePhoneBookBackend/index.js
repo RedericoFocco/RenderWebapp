@@ -1,9 +1,11 @@
 console.log("hello w")
-
+require('dotenv').config() // need to be imported before calling modules, models ecc
 const express = require('express')
 const morgan = require ('morgan')
-
+const mongoose = require('mongoose')
 //morgan.token('body',function(req){return JSON.stringify(req.body)})
+const Person = require('./models/persons')
+const persons = require('./models/persons')
 
 const app = express()
 
@@ -23,7 +25,7 @@ app.use(morgan(function (tokens, req, res) {
 
 app.use(express.static('dist')) //to show index.html static content
 
-personas=[
+/*personas=[
     { 
       "id": "1",
       "name": "Arto Hellass", 
@@ -44,13 +46,22 @@ personas=[
       "name": "Mary Poppendieck", 
       "number": "39-23-6423122"
     }
-]
+]*/
 
 app.get('/api/personas',(request, response) => {
-    response.json(personas)
+    Person.find({}).then(p=>{
+      response.json(p)
+    })
 })
 
 app.get('/api/personas/:id',(request, response) => {
+  Person.findById(request.params.id).then(
+    p=>{response.json(p)}
+  )
+})
+
+
+/*app.get('/api/personas/:id',(request, response) => {
     const id=request.params.id
     console.log("id",id)
     const [selectedInfo] = personas.filter(p=>p.id===id)
@@ -64,8 +75,8 @@ app.get('/api/personas/:id',(request, response) => {
         response.statusMessage=`No persona with id ${id} found`
         response.status(404).end() //end important
     }
-})
-
+})*/
+ 
 app.delete('/api/personas/:id',(request, response) => {
     const id=request.params.id
     console.log("[DELETION] id",id)
@@ -86,7 +97,33 @@ app.delete('/api/personas/:id',(request, response) => {
     }
 })
 
+
 app.post('/api/personas',(request,response) => {
+
+    console.log("requestbody name",request.body.name)
+    console.log("requestbody number",request.body.number)
+    if (!request.body.number || !request.body.name)
+    {
+        response.statusMessage="please fill number or name"
+        response.status(500).json({"error":"name or number missing"})
+    }
+    else
+    {
+      const reqName = request.body.name
+      const reqNumber = request.body.number
+      
+      const person = new Person({name:reqName,number:reqNumber})
+
+      person.save().then(res=>{
+        console.log('saved new entry')
+        response.json(res)
+      })
+    }
+
+})
+
+
+/*app.post('/api/personas',(request,response) => {
 
     console.log("requestbody name",request.body.name)
     console.log("requestbody number",request.body.number)
@@ -107,7 +144,7 @@ app.post('/api/personas',(request,response) => {
         response.json(reqBody)
     }
 
-})
+})*/
 
 app.get('/info',(request, response) => {
     response.send(`Phonebook has info for ${personas.length} people.<br> ${new Date().toString()}`)
