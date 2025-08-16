@@ -1,24 +1,27 @@
 GET http://localhost:3001/api/personas
 
 #### GET Good Req
-GET http://localhost:3001/api/personas/4
+GET http://localhost:3001/api/personas/689ca134516cc14c30817f27
+
+#### GET Bad Req not found
+GET http://localhost:3001/api/personas/689c7216174c9f265fb57edb
 
 #### GET Bad Req
 GET http://localhost:3001/api/personas/5
 
 #### Delete Good Req
-DELETE http://localhost:3001/api/personas/4
+DELETE http://localhost:3001/api/personas/689c7216174c9f265fb57edb
 
 #### Delete Bad Req
-DELETE http://localhost:3001/api/personas/5
+DELETE http://localhost:3001/api/personas/6
 
 #### Post Good Req
 POST http://localhost:3001/api/personas
 Content-Type: application/json; charset=utf-8
 
 {
-    "name":"fero",
-    "number":"123"
+    "name":"feror",
+    "number":"123-1123456"
 }
 
 #### Post Bad Req
@@ -26,5 +29,45 @@ POST http://localhost:3001/api/personas
 Content-Type: application/json; charset=utf-8
 
 {
+    
+}
+
+#### Post Bad Req - Validation errors
+POST http://localhost:3001/api/personas
+Content-Type: application/json; charset=utf-8
+
+{
+    "name":"fero",
+    "number":"12"
+}
+
+#### Put Good Req
+PUT http://localhost:3001/api/personas/689cc3b9333160bc635d727d
+Content-Type: application/json; charset=utf-8
+
+{
+    "name":"feroo",
+    "number":"123-123456"
+}
+
+
+#### Put Bad Req
+PUT http://localhost:3001/api/personas/689cc3b9333160bc635d728d
+Content-Type: application/json; charset=utf-8
+
+{
 
 }
+
+#### Put Bad Req - validator
+PUT http://localhost:3001/api/personas/689cc3b9333160bc635d727d
+Content-Type: application/json; charset=utf-8
+
+{
+    "name":"fe",
+    "number":"123"
+}
+
+#### Info
+GET http://localhost:3001/info
+

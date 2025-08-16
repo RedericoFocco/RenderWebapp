@@ -7,6 +7,7 @@ const mongoose = require('mongoose')
 const Person = require('./models/persons')
 const persons = require('./models/persons')
 
+
 const app = express()
 
 app.use(express.json())
@@ -54,10 +55,14 @@ app.get('/api/personas',(request, response) => {
     })
 })
 
-app.get('/api/personas/:id',(request, response) => {
-  Person.findById(request.params.id).then(
-    p=>{response.json(p)}
+app.get('/api/personas/:id',(request, response,next) => {
+  const id=request.params.id
+  Person.findById(id).then(
+    p=>{
+      if(!p){return response.status(404).end()}
+      response.json(p)}
   )
+  .catch(error=>next(error))
 })
 
 
@@ -77,7 +82,7 @@ app.get('/api/personas/:id',(request, response) => {
     }
 })*/
  
-app.delete('/api/personas/:id',(request, response) => {
+/*app.delete('/api/personas/:id',(request, response) => {
     const id=request.params.id
     console.log("[DELETION] id",id)
     const [selectedInfo] = personas.filter(p=>p.id===id)
@@ -95,10 +100,33 @@ app.delete('/api/personas/:id',(request, response) => {
         response.statusMessage=`No persona with id ${id} found`
         response.status(404).end() //end important
     }
+})*/
+
+
+app.put('/api/personas/:id',(request,response,next)=> {
+  const id = request.params.id
+  console.log('[PUT] received body',request.body)
+  console.log('[PUT] requested id',id)
+  Person.findByIdAndUpdate(id,request.body,{ new: true, runValidators: true }).then(
+    p=>{
+      console.log('p inside then',p)
+      if(!p){return response.status(404).end()}
+      response.json(p)
+    }).catch(error=>next(error))
 })
 
+app.delete('/api/personas/:id',(request, response,next) => {
+    const id=request.params.id
+    console.log("[DELETION] id",id)
+    Person.findByIdAndDelete(id).then(p=>
+      {
+          console.log('deleted id')
+          response.status(204).end()
+      }
+    ).catch(error=>next(error))
+})
 
-app.post('/api/personas',(request,response) => {
+app.post('/api/personas',(request,response,next) => {
 
     console.log("requestbody name",request.body.name)
     console.log("requestbody number",request.body.number)
@@ -117,7 +145,7 @@ app.post('/api/personas',(request,response) => {
       person.save().then(res=>{
         console.log('saved new entry')
         response.json(res)
-      })
+      }).catch(error=>next(error))
     }
 
 })
@@ -146,13 +174,35 @@ app.post('/api/personas',(request,response) => {
 
 })*/
 
-app.get('/info',(request, response) => {
-    response.send(`Phonebook has info for ${personas.length} people.<br> ${new Date().toString()}`)
+app.get('/info',(request, response,next) => {
+    Person.countDocuments().then(p=>
+      {
+        console.log('count documents:',p)
+        response.send(`Phonebook has info for ${p} people.<br> ${new Date().toString()}`)
+      }
+    ).catch(error=>next(error))
 })
 
+//Note that the error-handling middleware has to be the last loaded middleware, 
+// also all the routes should be registered before the error-handler!
 
+const errorHandler = (error, request, response, next) => {
+  console.error("[ERROR HANDLER]",error.message)
+
+  if (error.name === 'CastError') {
+    return response.status(400).send({ error: 'malformatted id' })
+  }
+  if(error.name==='ValidationError'){
+    return response.status(400).send({error:error.message})
+  } 
+
+  next(error)
+}
+
+app.use(errorHandler)
 
 const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })
+
